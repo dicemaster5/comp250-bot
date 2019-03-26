@@ -1,6 +1,8 @@
 package bot;
 
+import ai.abstraction.AbstractAction;
 import ai.abstraction.AbstractionLayerAI;
+import ai.abstraction.Harvest;
 import ai.abstraction.pathfinding.AStarPathFinding;
 import ai.core.AI;
 import ai.core.ParameterSpecification;
@@ -12,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import rts.*;
 import rts.units.Unit;
@@ -76,15 +79,54 @@ public class BoBot extends AbstractionLayerAI {
         		if(unit.getType() == baseType)
         		{
         			base = unit;
+        			train(base, worker);
         		}
         		
             	// Get the worker to harvest resources
         		else if(unit.getType().canHarvest)
             	{
-            		harvest(unit, resource, base);
+        			List<Unit> freeWorkers = new LinkedList<Unit>();
+        			freeWorkers.add(unit);
+        			
+        	        // harvest with all the free workers:
+        	        for (Unit u : freeWorkers) {
+        	            Unit closestBase = null;
+        	            Unit closestResource = null;
+        	            int closestDistance = 0;
+        	            for (Unit u2 : pgs.getUnits()) {
+        	                if (u2.getType().isResource) {
+        	                    int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
+        	                    if (closestResource == null || d < closestDistance) {
+        	                        closestResource = u2;
+        	                        closestDistance = d;
+        	                    }
+        	                }
+        	            }
+        	            closestDistance = 0;
+        	            for (Unit u2 : pgs.getUnits()) {
+        	                if (u2.getType().isStockpile && u2.getPlayer() == player) {
+        	                    int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
+        	                    if (closestBase == null || d < closestDistance) {
+        	                        closestBase = u2;
+        	                        closestDistance = d;
+        	                    }
+        	                }
+        	            }
+        	            if (closestResource != null && closestBase != null) {
+        	                AbstractAction aa = getAbstractAction(u);
+        	                if (aa instanceof Harvest) {
+        	                    Harvest h_aa = (Harvest)aa;
+        	                    if (h_aa.getTarget() != closestResource || h_aa.getBase()!=closestBase) harvest(u, closestResource, closestBase);
+        	                } else {
+        	                    harvest(u, closestResource, closestBase);
+        	                }
+        	            }
+        	        }
             	}
         	}
         }
+        
+
         
         return translateActions(player, gs);
     }
