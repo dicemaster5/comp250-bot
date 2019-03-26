@@ -6,6 +6,7 @@ package tests;
 
 
 import ai.core.AI;
+import ai.PassiveAI;
 import ai.RandomBiasedAI;
 import ai.abstraction.WorkerRush;
 import ai.abstraction.pathfinding.BFSPathFinding;
@@ -36,8 +37,8 @@ public class GameVisualSimulationTest {
         boolean gameover = false;
         
         //AI ai1 = new WorkerRush(utt, new BFSPathFinding());
-        AI ai1 = new MyBot(utt);
-        AI ai2 = new RandomBiasedAI();
+        AI ai1 = new BoBot(utt);
+        AI ai2 = new PassiveAI(utt);
 
         JFrame w = PhysicalGameStatePanel.newVisualizer(gs,640,640,false,PhysicalGameStatePanel.COLORSCHEME_BLACK);
 //        JFrame w = PhysicalGameStatePanel.newVisualizer(gs,640,640,false,PhysicalGameStatePanel.COLORSCHEME_WHITE);

@@ -18,14 +18,33 @@ import rts.units.Unit;
 import rts.units.UnitType;
 import rts.units.UnitTypeTable;
 
-public class MyBot extends AbstractionLayerAI {    
+/*
+ * 
+ * @author Sam 
+ */
+
+public class BoBot extends AbstractionLayerAI {    
     private UnitTypeTable utt;
     private UnitType worker;
     
-    public MyBot(UnitTypeTable utt) {
+    UnitType workerType;
+    UnitType baseType;
+    UnitType barracksType;
+    UnitType rangedType;
+    
+    Unit resource = null;
+    Unit base = null;
+    
+    // Strategy implemented by this class:
+    //Just try to do anything
+    
+    
+    public BoBot(UnitTypeTable utt) {
         super(new AStarPathFinding());
         this.utt = utt;
         worker = utt.getUnitType("Worker");
+        baseType = utt.getUnitType("Base");
+
     }
     
 
@@ -36,7 +55,7 @@ public class MyBot extends AbstractionLayerAI {
     
     @Override
     public AI clone() {
-        return new MyBot(utt);
+        return new BoBot(utt);
     }
    
     
@@ -46,6 +65,25 @@ public class MyBot extends AbstractionLayerAI {
         
         for (Unit unit : pgs.getUnits()) {
             // TODO: issue commands to units
+        	
+    		if(unit.getType().isResource)
+    		{
+    			resource = unit;
+    		}
+        	
+        	if(unit.getPlayer() == player)
+        	{
+        		if(unit.getType() == baseType)
+        		{
+        			base = unit;
+        		}
+        		
+            	// Get the worker to harvest resources
+        		else if(unit.getType().canHarvest)
+            	{
+            		harvest(unit, resource, base);
+            	}
+        	}
         }
         
         return translateActions(player, gs);
