@@ -109,7 +109,9 @@ public class BoBot extends AbstractionLayerAI {
     	        
     	        for (Unit a : attackers)
     	        {
-    	        	attack(a, ennemies.get(ennemies.size() - 1));
+    	        	//attack(a, ennemies.get(ennemies.size() - 1));
+    	        	findEnnemyToAttack(a, ennemies);
+    	        	
     	        }
     	        
         	}
@@ -121,6 +123,24 @@ public class BoBot extends AbstractionLayerAI {
         }
         
         return translateActions(player, gs);
+    }
+    
+    public void findEnnemyToAttack(Unit u, List<Unit> e)
+    {
+    	 Unit closestEnemy = null;
+    	 int closestDistance = 0;
+         for(Unit e2: e) {
+             int d = Math.abs(e2.getX() - u.getX()) + Math.abs(e2.getY() - u.getY());
+             if (closestEnemy==null || d<closestDistance) 
+             {
+                 closestEnemy = e2;
+                 closestDistance = d;
+             }
+             if (closestEnemy!=null)
+             {
+                 attack(u,closestEnemy);
+             }
+         }
     }
     
     @Override
