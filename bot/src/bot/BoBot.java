@@ -22,7 +22,6 @@ import rts.units.UnitType;
 import rts.units.UnitTypeTable;
 
 /*
- * 
  * @author Sam 
  */
 
@@ -35,8 +34,9 @@ public class BoBot extends AbstractionLayerAI {
     UnitType barracksType;
     UnitType rangedType;
     
-    Unit resource = null;
     Unit base = null;
+    Unit green = null; 
+
     
     // Strategy implemented by this class:
     //Just try to do anything
@@ -47,12 +47,12 @@ public class BoBot extends AbstractionLayerAI {
         this.utt = utt;
         worker = utt.getUnitType("Worker");
         baseType = utt.getUnitType("Base");
-
     }
     
 
     @Override
     public void reset() {
+
     }
 
     
@@ -65,13 +65,20 @@ public class BoBot extends AbstractionLayerAI {
     @Override
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
+        List<Unit> resources = new LinkedList<Unit>();
+        List<Unit> workers = new LinkedList<Unit>();
+        List<Unit> defenders = new LinkedList<Unit>();
+        List<Unit> attackers = new LinkedList<Unit>();
         
-        for (Unit unit : pgs.getUnits()) {
+        List<Unit> ennemies = new LinkedList<Unit>();        
+        for (Unit unit : pgs.getUnits()) 
+        {
             // TODO: issue commands to units
         	
     		if(unit.getType().isResource)
     		{
-    			resource = unit;
+    			green = unit;
+    			resources.add(unit);
     		}
         	
         	if(unit.getPlayer() == player)
@@ -82,51 +89,36 @@ public class BoBot extends AbstractionLayerAI {
         			train(base, worker);
         		}
         		
-            	// Get the worker to harvest resources
-        		else if(unit.getType().canHarvest)
-            	{
-        			List<Unit> freeWorkers = new LinkedList<Unit>();
-        			freeWorkers.add(unit);
-        			
-        	        // harvest with all the free workers:
-        	        for (Unit u : freeWorkers) {
-        	            Unit closestBase = null;
-        	            Unit closestResource = null;
-        	            int closestDistance = 0;
-        	            for (Unit u2 : pgs.getUnits()) {
-        	                if (u2.getType().isResource) {
-        	                    int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-        	                    if (closestResource == null || d < closestDistance) {
-        	                        closestResource = u2;
-        	                        closestDistance = d;
-        	                    }
-        	                }
-        	            }
-        	            closestDistance = 0;
-        	            for (Unit u2 : pgs.getUnits()) {
-        	                if (u2.getType().isStockpile && u2.getPlayer() == player) {
-        	                    int d = Math.abs(u2.getX() - u.getX()) + Math.abs(u2.getY() - u.getY());
-        	                    if (closestBase == null || d < closestDistance) {
-        	                        closestBase = u2;
-        	                        closestDistance = d;
-        	                    }
-        	                }
-        	            }
-        	            if (closestResource != null && closestBase != null) {
-        	                AbstractAction aa = getAbstractAction(u);
-        	                if (aa instanceof Harvest) {
-        	                    Harvest h_aa = (Harvest)aa;
-        	                    if (h_aa.getTarget() != closestResource || h_aa.getBase()!=closestBase) harvest(u, closestResource, closestBase);
-        	                } else {
-        	                    harvest(u, closestResource, closestBase);
-        	                }
-        	            }
-        	        }
-            	}
+
+    	        if (unit.getType() == worker)
+    	        {
+    	        	if(workers.size() < 2)
+    	        	{
+    	        		workers.add(unit);
+    	        	}
+    	        	else
+    	        	{
+    	        		attackers.add(unit);
+    	        	}
+    	        }
+    	        
+    	        for (Unit w : workers)
+    	        {
+        	        harvest(w, resources.get(0), base);
+    	        }
+    	        
+    	        for (Unit a : attackers)
+    	        {
+    	        	attack(a, ennemies.get(ennemies.size() - 1));
+    	        }
+    	        
+        	}
+        	else if(unit.getPlayer() != player && !unit.getType().isResource)
+        	{
+        		if(!ennemies.contains(unit))
+        			ennemies.add(unit);
         	}
         }
-        
-
         
         return translateActions(player, gs);
     }
