@@ -104,12 +104,11 @@ public class BoBot extends AbstractionLayerAI {
     	        
     	        for (Unit w : workers)
     	        {
-        	        harvest(w, resources.get(0), base);
+    	        	findResourceToHarvest(w, resources, base);
     	        }
     	        
     	        for (Unit a : attackers)
     	        {
-    	        	//attack(a, ennemies.get(ennemies.size() - 1));
     	        	findEnnemyToAttack(a, ennemies);
     	        	
     	        }
@@ -125,6 +124,7 @@ public class BoBot extends AbstractionLayerAI {
         return translateActions(player, gs);
     }
     
+    // Finds the closest Enemy to attack
     public void findEnnemyToAttack(Unit u, List<Unit> e)
     {
     	 Unit closestEnemy = null;
@@ -139,6 +139,24 @@ public class BoBot extends AbstractionLayerAI {
              if (closestEnemy!=null)
              {
                  attack(u,closestEnemy);
+             }
+         }
+    }
+    
+    public void findResourceToHarvest(Unit u, List<Unit> r, Unit b)
+    {
+    	 Unit closestResource = null;
+    	 int closestDistance = 0;
+         for(Unit r2: r) {
+             int d = Math.abs(r2.getX() - u.getX()) + Math.abs(r2.getY() - u.getY());
+             if (closestResource==null || d<closestDistance) 
+             {
+            	 closestResource = r2;
+                 closestDistance = d;
+             }
+             if (closestResource!=null)
+             {
+            	 harvest(u,closestResource, b);
              }
          }
     }
