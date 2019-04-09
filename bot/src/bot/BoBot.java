@@ -35,7 +35,13 @@ public class BoBot extends AbstractionLayerAI {
     UnitType rangedType;
     
     Unit base = null;
-    Unit green = null; 
+    Unit green = null;
+    
+    public int attackerWorker = 1;
+    public int defenderWorker = 1;
+    public int attackerAmount = 10;
+    public int defenderAmount = 4;
+    public int barracksAmount = 1;
 
     
     // Strategy implemented by this class:
@@ -83,16 +89,18 @@ public class BoBot extends AbstractionLayerAI {
         	
         	if(unit.getPlayer() == player)
         	{
+        		// Get the main base
         		if(unit.getType() == baseType)
         		{
         			base = unit;
         			train(base, worker);
         		}
         		
-
+        		// Find all workers
     	        if (unit.getType() == worker)
     	        {
-    	        	if(workers.size() < 2)
+    	        	// Add workers to the worker list
+    	        	if(workers.size() < attackerWorker)
     	        	{
     	        		workers.add(unit);
     	        	}
@@ -102,15 +110,16 @@ public class BoBot extends AbstractionLayerAI {
     	        	}
     	        }
     	        
+    	        // Make workers harvest closest resource
     	        for (Unit w : workers)
     	        {
     	        	findResourceToHarvest(w, resources, base);
     	        }
     	        
+    	        // Make attackers attack closest enemy
     	        for (Unit a : attackers)
     	        {
-    	        	findEnnemyToAttack(a, ennemies);
-    	        	
+    	        	findEnemyToAttack(a, ennemies);
     	        }
     	        
         	}
@@ -125,7 +134,7 @@ public class BoBot extends AbstractionLayerAI {
     }
     
     // Finds the closest Enemy to attack
-    public void findEnnemyToAttack(Unit u, List<Unit> e)
+    public void findEnemyToAttack(Unit u, List<Unit> e)
     {
     	 Unit closestEnemy = null;
     	 int closestDistance = 0;
