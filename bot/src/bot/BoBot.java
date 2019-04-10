@@ -55,6 +55,7 @@ public class BoBot extends AbstractionLayerAI {
         baseType = utt.getUnitType("Base");
         barracksType = utt.getUnitType("Barracks");
         heavyType = utt.getUnitType("Heavy");
+        rangedType = utt.getUnitType("Ranged");
     }
     
 
@@ -106,7 +107,7 @@ public class BoBot extends AbstractionLayerAI {
         		if(unit.getType() == barracksType)
         		{
         			green = unit;
-        			train(green, heavyType);
+        			train(green, rangedType);
 
         		}
         		
@@ -132,6 +133,12 @@ public class BoBot extends AbstractionLayerAI {
     	        
     	        // Add heavy units to attackers list
     	        if(unit.getType() == heavyType)
+    	        {
+    	        	attackers.add(unit);
+    	        }
+    	        
+    	        // Add ranged units to attackers list
+    	        if(unit.getType() == rangedType)
     	        {
     	        	attackers.add(unit);
     	        }
