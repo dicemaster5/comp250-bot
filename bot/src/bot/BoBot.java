@@ -161,7 +161,7 @@ public class BoBot extends AbstractionLayerAI {
     	        	
     	        	if(gs.getPlayer(player).getResources() > 5)
     	        	{
-    	        		build(d, barracksType, 5, 1);
+    	        		build(d, barracksType, base.getX() + 1, base.getY() + 1);
     	        		
     	        	}
     	        	else if(barracks.size() == 1)
