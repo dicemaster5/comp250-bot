@@ -33,6 +33,8 @@ public class BoBot extends AbstractionLayerAI {
     UnitType baseType;
     UnitType barracksType;
     UnitType rangedType;
+    UnitType heavyType;
+
     
     Unit base = null;
     Unit green = null;
@@ -42,17 +44,17 @@ public class BoBot extends AbstractionLayerAI {
     public int attackerAmount = 10;
     public int defenderAmount = 4;
     public int barracksAmount = 1;
-
     
     // Strategy implemented by this class:
     //Just try to do anything
-    
     
     public BoBot(UnitTypeTable utt) {
         super(new AStarPathFinding());
         this.utt = utt;
         worker = utt.getUnitType("Worker");
         baseType = utt.getUnitType("Base");
+        barracksType = utt.getUnitType("Barracks");
+        heavyType = utt.getUnitType("Heavy");
     }
     
 
@@ -61,20 +63,23 @@ public class BoBot extends AbstractionLayerAI {
 
     }
 
-    
     @Override
     public AI clone() {
         return new BoBot(utt);
     }
    
-    
+//================================================= MAIN LOOP ==================================================//   
     @Override
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
         List<Unit> resources = new LinkedList<Unit>();
-        List<Unit> workers = new LinkedList<Unit>();
+        List<Unit> attackWorkers = new LinkedList<Unit>();
+        List<Unit> defendWorkers = new LinkedList<Unit>();
         List<Unit> defenders = new LinkedList<Unit>();
         List<Unit> attackers = new LinkedList<Unit>();
+        
+        List<Unit> bases = new LinkedList<Unit>();
+        List<Unit> barracks = new LinkedList<Unit>();
         
         List<Unit> ennemies = new LinkedList<Unit>();        
         for (Unit unit : pgs.getUnits()) 
@@ -92,26 +97,47 @@ public class BoBot extends AbstractionLayerAI {
         		// Get the main base
         		if(unit.getType() == baseType)
         		{
+        			//bases.add(unit);
         			base = unit;
         			train(base, worker);
+        		}
+        		
+        		// Get the main barracks
+        		if(unit.getType() == barracksType)
+        		{
+        			green = unit;
+        			train(green, heavyType);
+
         		}
         		
         		// Find all workers
     	        if (unit.getType() == worker)
     	        {
     	        	// Add workers to the worker list
-    	        	if(workers.size() < attackerWorker)
+    	        	if(attackWorkers.size() < attackerWorker)
     	        	{
-    	        		workers.add(unit);
+    	        		attackWorkers.add(unit);
     	        	}
+    	        	
+    	        	else if(defendWorkers.size() < defenderWorker)
+    	        	{
+    	        		defendWorkers.add(unit);
+    	        	}
+    	        	
     	        	else
     	        	{
     	        		attackers.add(unit);
     	        	}
     	        }
     	        
+    	        // Add heavy units to attackers list
+    	        if(unit.getType() == heavyType)
+    	        {
+    	        	attackers.add(unit);
+    	        }
+    	        
     	        // Make workers harvest closest resource
-    	        for (Unit w : workers)
+    	        for (Unit w : attackWorkers)
     	        {
     	        	findResourceToHarvest(w, resources, base);
     	        }
@@ -120,6 +146,26 @@ public class BoBot extends AbstractionLayerAI {
     	        for (Unit a : attackers)
     	        {
     	        	findEnemyToAttack(a, ennemies);
+    	        }
+    	        
+    	        // 
+    	        for (Unit d : defendWorkers)
+    	        {
+    	        	
+    	        	if(gs.getPlayer(player).getResources() > 5)
+    	        	{
+    	        		build(d, barracksType, 5, 1);
+    	        		
+    	        	}
+    	        	else if(barracks.size() == 1)
+    	        	{
+    	        		findResourceToHarvest(d, resources, barracks.get(0));
+    	        	}
+    	        	
+    	        	else
+    	        	{
+    	        		findResourceToHarvest(d, resources, base);
+    	        	}
     	        }
     	        
         	}
@@ -132,6 +178,8 @@ public class BoBot extends AbstractionLayerAI {
         
         return translateActions(player, gs);
     }
+    
+//============================================== FUNCTIONS TO USE ================================================//
     
     // Finds the closest Enemy to attack
     public void findEnemyToAttack(Unit u, List<Unit> e)
@@ -152,6 +200,7 @@ public class BoBot extends AbstractionLayerAI {
          }
     }
     
+    // Finds the closest resource to harvest
     public void findResourceToHarvest(Unit u, List<Unit> r, Unit b)
     {
     	 Unit closestResource = null;
