@@ -34,6 +34,8 @@ public class BoBot extends AbstractionLayerAI {
     UnitType barracksType;
     UnitType rangedType;
     UnitType heavyType;
+    UnitType lightType;
+
 
     
     Unit base = null;
@@ -56,6 +58,7 @@ public class BoBot extends AbstractionLayerAI {
         barracksType = utt.getUnitType("Barracks");
         heavyType = utt.getUnitType("Heavy");
         rangedType = utt.getUnitType("Ranged");
+        lightType = utt.getUnitType("Light");
     }
     
 
@@ -82,106 +85,176 @@ public class BoBot extends AbstractionLayerAI {
         List<Unit> bases = new LinkedList<Unit>();
         List<Unit> barracks = new LinkedList<Unit>();
         
-        List<Unit> ennemies = new LinkedList<Unit>();        
-        for (Unit unit : pgs.getUnits()) 
+        List<Unit> ennemies = new LinkedList<Unit>();       
+        
+        if(pgs.getHeight() < 12)
         {
-            // TODO: issue commands to units
-        	
-    		if(unit.getType().isResource)
-    		{
-    			green = unit;
-    			resources.add(unit);
-    		}
-        	
-        	if(unit.getPlayer() == player)
-        	{
-        		// Get the main base
-        		if(unit.getType() == baseType)
-        		{
-        			//bases.add(unit);
-        			base = unit;
-        			train(base, worker);
-        		}
-        		
-        		// Get the main barracks
-        		if(unit.getType() == barracksType)
+        	for (Unit unit : pgs.getUnits()) 
+            {
+                // TODO: issue commands to units
+            	
+        		if(unit.getType().isResource)
         		{
         			green = unit;
-        			train(green, rangedType);
-
+        			resources.add(unit);
         		}
-        		
-        		// Find all workers
-    	        if (unit.getType() == worker)
-    	        {
-    	        	// Add workers to the worker list
-    	        	if(attackWorkers.size() < attackerWorker)
-    	        	{
-    	        		attackWorkers.add(unit);
-    	        	}
-    	        	
-    	        	else if(defendWorkers.size() < defenderWorker)
-    	        	{
-    	        		defendWorkers.add(unit);
-    	        	}
-    	        	
-    	        	else
-    	        	{
-    	        		attackers.add(unit);
-    	        	}
-    	        }
-    	        
-    	        // Add heavy units to attackers list
-    	        if(unit.getType() == heavyType)
-    	        {
-    	        	attackers.add(unit);
-    	        }
-    	        
-    	        // Add ranged units to attackers list
-    	        if(unit.getType() == rangedType)
-    	        {
-    	        	attackers.add(unit);
-    	        }
-    	        
-    	        // Make workers harvest closest resource
-    	        for (Unit w : attackWorkers)
-    	        {
-    	        	findResourceToHarvest(w, resources, base);
-    	        }
-    	        
-    	        // Make attackers attack closest enemy
-    	        for (Unit a : attackers)
-    	        {
-    	        	findEnemyToAttack(a, ennemies);
-    	        }
-    	        
-    	        // 
-    	        for (Unit d : defendWorkers)
-    	        {
-    	        	
-    	        	if(gs.getPlayer(player).getResources() > 5)
-    	        	{
-    	        		build(d, barracksType, base.getX() + 1, base.getY() + 1);
-    	        		
-    	        	}
-    	        	else if(barracks.size() == 1)
-    	        	{
-    	        		findResourceToHarvest(d, resources, barracks.get(0));
-    	        	}
-    	        	
-    	        	else
-    	        	{
-    	        		findResourceToHarvest(d, resources, base);
-    	        	}
-    	        }
-    	        
-        	}
-        	else if(unit.getPlayer() != player && !unit.getType().isResource)
-        	{
-        		if(!ennemies.contains(unit))
-        			ennemies.add(unit);
-        	}
+            	
+            	if(unit.getPlayer() == player)
+            	{
+            		// Get the main base
+            		if(unit.getType() == baseType)
+            		{
+            			//bases.add(unit);
+            			base = unit;
+            			train(base, worker);
+            		}
+            		
+            		
+            		// Find all workers
+        	        if (unit.getType() == worker)
+        	        {
+        	        	// Add workers to the worker list
+        	        	if(attackWorkers.size() < attackerWorker)
+        	        	{
+        	        		attackWorkers.add(unit);
+        	        	}
+        	        	else
+        	        	{
+        	        		attackers.add(unit);
+        	        	}
+        	        }
+        	        
+        	        // Make workers harvest closest resource
+        	        for (Unit w : attackWorkers)
+        	        {
+        	        	findResourceToHarvest(w, resources, base);
+        	        }
+        	        
+        	        // Make attackers attack closest enemy
+        	        for (Unit a : attackers)
+        	        {
+        	        	findEnemyToAttack(a, ennemies);
+        	        }
+        	        
+            	}
+            	else if(unit.getPlayer() != player && !unit.getType().isResource)
+            	{
+            		if(!ennemies.contains(unit))
+            			ennemies.add(unit);
+            	}
+            }
         }
+        else if (pgs.getHeight() >= 12)
+        {
+        	for (Unit unit : pgs.getUnits()) 
+            {
+                // TODO: issue commands to units
+            	
+        		if(unit.getType().isResource)
+        		{
+        			green = unit;
+        			resources.add(unit);
+        		}
+            	
+            	if(unit.getPlayer() == player)
+            	{
+            		// Get the main base
+            		if(unit.getType() == baseType)
+            		{
+            			//bases.add(unit);
+            			base = unit;
+            			train(base, worker);
+            		}
+            		
+            		// Get the main barracks
+            		if(unit.getType() == barracksType)
+            		{
+            			green = unit;
+            			//train(green, rangedType);
+            			//train(green, heavyType);
+            			train(green, lightType);
+            		}
+            		
+            		// Find all workers
+        	        if (unit.getType() == worker)
+        	        {
+        	        	// Add workers to the worker list
+        	        	if(attackWorkers.size() < attackerWorker)
+        	        	{
+        	        		attackWorkers.add(unit);
+        	        	}
+        	        	
+        	        	else if(defendWorkers.size() < defenderWorker)
+        	        	{
+        	        		defendWorkers.add(unit);
+        	        	}
+        	        	
+        	        	else
+        	        	{
+        	        		attackers.add(unit);
+        	        	}
+        	        }
+        	        
+        	        // Add heavy units to attackers list
+        	        if(unit.getType() == heavyType)
+        	        {
+        	        	attackers.add(unit);
+        	        }
+        	        
+        	        // Add ranged units to attackers list
+        	        if(unit.getType() == rangedType)
+        	        {
+        	        	attackers.add(unit);
+        	        }
+        	        
+        	        // Add ranged units to attackers list
+        	        if(unit.getType() == lightType)
+        	        {
+        	        	attackers.add(unit);
+        	        }
+        	        
+        	        // Make workers harvest closest resource
+        	        for (Unit w : attackWorkers)
+        	        {
+        	        	findResourceToHarvest(w, resources, base);
+        	        }
+        	        
+        	        // Make attackers attack closest enemy
+        	        for (Unit a : attackers)
+        	        {
+        	        	findEnemyToAttack(a, ennemies);
+        	        }
+        	        
+        	        // 
+        	        for (Unit d : defendWorkers)
+        	        {
+        	        	
+        	        	if(gs.getPlayer(player).getResources() > 8)
+        	        	{
+        	        		build(d, barracksType, base.getX() + 1, base.getY() + 1);
+        	        		
+        	        	}
+        	        	else if(barracks.size() == 1)
+        	        	{
+        	        		findResourceToHarvest(d, resources, barracks.get(0));
+        	        	}
+        	        	
+        	        	else
+        	        	{
+        	        		findResourceToHarvest(d, resources, base);
+        	        	}
+        	        }
+        	        
+            	}
+            	else if(unit.getPlayer() != player && !unit.getType().isResource)
+            	{
+            		if(!ennemies.contains(unit))
+            			ennemies.add(unit);
+            	}
+            }
+        }
+        
+        
         
         return translateActions(player, gs);
     }
