@@ -185,14 +185,14 @@ public class BoBot extends AbstractionLayerAI {
     		{
     			resourceWorkers.add(workers.remove(0));
     		}
-			
-        	if(resourceWorkers.size() < bases.size())
-			{
 
+        	if(resourceWorkers.size() != bases.size())
+			{
 	    		for(Unit base:bases)
 	    		{
 	    			train(base, worker);
 	    		}
+        		
 			}
 			
 			else
@@ -202,13 +202,18 @@ public class BoBot extends AbstractionLayerAI {
 	    			if(CheckUnitsAround(pgs, base) < 2)
 	    			{
 	    				train(base, worker);
+	    				
 	    				if(workers.size() > 0 && barrackWorkers.size() < 1)
+	    				{
 	    					barrackWorkers.add(workers.remove(0));
+	    				}
 	    			}
 	    			else
 	    			{
 	    				if(workers.size() > 0)
+	    				{
 	    					barrackWorkers.add(workers.remove(0));
+	    				}
 	    			}
 	    		}
 			}
@@ -249,7 +254,7 @@ public class BoBot extends AbstractionLayerAI {
 	        	
 	        	else
 	        	{	
-	        		if(CurrentMapSize == MEDIUM_MAP)
+	        		if(CurrentMapSize == MEDIUM_MAP || CurrentMapSize == LARGE_MAP)
 	        			findResourceToHarvest(b, resources, findClosestBase(b,bases));
 	        	}
 			}	
