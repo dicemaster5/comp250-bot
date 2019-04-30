@@ -161,15 +161,6 @@ public class BoBot extends AbstractionLayerAI {
     			if(unit.getType() == worker && !workers.contains(unit) && !resourceWorkers.contains(unit) && !barrackWorkers.contains(unit))
         		{
     				workers.add(unit);
-    				
-    	    		if(resourceWorkers.size() < bases.size())
-    	    		{	
-    	        		if(workers.size() > 0)
-    	        		{
-    	        			resourceWorkers.add(workers.remove(0));
-    	        		}
-    	    		}
-    	    		
         		}
     			if(unit.getType() == rangedType && !ranged.contains(unit))
         		{
@@ -192,6 +183,10 @@ public class BoBot extends AbstractionLayerAI {
 		{
         	if(resourceWorkers.size() != bases.size())
 			{
+        		if(workers.size() > 0)
+        		{
+        			resourceWorkers.add(workers.remove(0));
+        		}
 	    		for(Unit base:bases)
 	    		{
 	    			train(base, worker);
@@ -211,7 +206,8 @@ public class BoBot extends AbstractionLayerAI {
 	    			}
 	    			else
 	    			{
-	    				barrackWorkers.add(workers.remove(0));
+	    				if(workers.size() > 0)
+	    					barrackWorkers.add(workers.remove(0));
 	    			}
 	    		}
 			}
