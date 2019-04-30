@@ -221,13 +221,13 @@ public class BoBot extends AbstractionLayerAI {
 			
 			for(Unit b:barracks)
 			{
-				if(light.size() > ranged.size())
+				if(light.size() < ranged.size())
 				{
-					train(b, rangedType);
+					train(b, lightType);
 				}
 				else
 				{
-					train(b, lightType);
+					train(b, rangedType);
 				}
 				
 
