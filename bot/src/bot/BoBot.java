@@ -181,12 +181,14 @@ public class BoBot extends AbstractionLayerAI {
 		// Base Strategy =============================================================================================================
 		if(bases.size() != 0)
 		{
-        	if(resourceWorkers.size() != bases.size())
+    		if(workers.size() > 0)
+    		{
+    			resourceWorkers.add(workers.remove(0));
+    		}
+			
+        	if(resourceWorkers.size() < bases.size())
 			{
-        		if(workers.size() > 0)
-        		{
-        			resourceWorkers.add(workers.remove(0));
-        		}
+
 	    		for(Unit base:bases)
 	    		{
 	    			train(base, worker);
@@ -202,7 +204,6 @@ public class BoBot extends AbstractionLayerAI {
 	    				train(base, worker);
 	    				if(workers.size() > 0 && barrackWorkers.size() < 1)
 	    					barrackWorkers.add(workers.remove(0));
-
 	    			}
 	    			else
 	    			{
