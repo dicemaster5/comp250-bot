@@ -62,6 +62,7 @@ public class BoBot extends AbstractionLayerAI {
     public int SMALL_MAP = 1;
    
     int CurrentMapSize = 0; 
+    boolean unitTypeSwitch = false;
     
     public BoBot(UnitTypeTable utt) {
         super(new AStarPathFinding());
@@ -220,7 +221,16 @@ public class BoBot extends AbstractionLayerAI {
 			
 			for(Unit b:barracks)
 			{
-				train(b, rangedType);
+				if(light.size() > ranged.size())
+				{
+					train(b, rangedType);
+				}
+				else
+				{
+					train(b, lightType);
+				}
+				
+
 			}
 			
 			// ====================================================== BEAHVIOURS AND ACTIONS ========================================================================
