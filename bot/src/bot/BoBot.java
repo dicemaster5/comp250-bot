@@ -109,7 +109,7 @@ public class BoBot extends AbstractionLayerAI {
         List<Unit> light = new LinkedList<Unit>();
 
         List<Unit> resourceWorkers = new LinkedList<Unit>();
-        List<Unit> attackWorkers = new LinkedList<Unit>();
+        //List<Unit> attackWorkers = new LinkedList<Unit>();
         List<Unit> barrackWorkers = new LinkedList<Unit>();
         List<Unit> defenders = new LinkedList<Unit>();
         List<Unit> attackers = new LinkedList<Unit>();
@@ -158,7 +158,7 @@ public class BoBot extends AbstractionLayerAI {
     				barracks.add(unit);
         		}
     			
-    			if(unit.getType() == worker && !workers.contains(unit) && !resourceWorkers.contains(unit))
+    			if(unit.getType() == worker && !workers.contains(unit) && !resourceWorkers.contains(unit) && !barrackWorkers.contains(unit))
         		{
     				workers.add(unit);
     				
@@ -205,13 +205,13 @@ public class BoBot extends AbstractionLayerAI {
 	    			if(CheckUnitsAround(pgs, base) < 2)
 	    			{
 	    				train(base, worker);
+	    				if(workers.size() > 0 && barrackWorkers.size() < 1)
+	    					barrackWorkers.add(workers.remove(0));
+
 	    			}
 	    			else
 	    			{
-	    				if(workers.size() > 0)
-		        		{
-	    					barrackWorkers.add(workers.remove(0));
-		        		}
+	    				barrackWorkers.add(workers.remove(0));
 	    			}
 	    		}
 			}
@@ -237,23 +237,23 @@ public class BoBot extends AbstractionLayerAI {
 			}
 			
 			// BARRACKS WORKERS =================================================
-			for(Unit w:barrackWorkers)
+			for(Unit b:barrackWorkers)
 			{
 	        	if(p.getResources() > 8)
 	        	{
 	        		Unit base = bases.get(0);
-	        		build(w, barracksType, base.getX() + 1, base.getY() + 1);
+	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);
 	        		
 	        	}
 	        	else if(barracks.size() >= 1)
 	        	{
-	        		findResourceToHarvest(w, resources, barracks.get(0));
+	        		findResourceToHarvest(b, resources, findClosestBase(b,bases));
 	        	}
 	        	
 	        	else
 	        	{	
-	        		if(CurrentMapSize != SMALL_MAP)
-	        			findResourceToHarvest(w, resources, findClosestBase(w,bases));
+	        		if(CurrentMapSize == MEDIUM_MAP)
+	        			findResourceToHarvest(b, resources, findClosestBase(b,bases));
 	        	}
 			}	
 			
@@ -264,13 +264,13 @@ public class BoBot extends AbstractionLayerAI {
 			{
 				if(ennemies.size() > 0)
 	    			findEnemyToAttack(a, ennemies);
-	    		else if(resources.size() > 0 && a.getType().canHarvest)
+	    		else if(resources.size() > 0 && a.getType().canHarvest && enemyBases.get(0).getResources() > 0)
 	   				findResourceToHarvest(a, resources, findClosestBase(a,bases));
 	    		else
 	    			findEnemyToAttack(a, enemyBases);
 			}
 			
-			// RANGED UNITS ========================================================
+			// Special UNITS ========================================================
 			for (Unit r:ranged)
 			{
 				if(ennemies.size() > 0)
@@ -279,7 +279,24 @@ public class BoBot extends AbstractionLayerAI {
 	   				findEnemyToAttack(r, enemyBases);
 			}
 			
+			for (Unit r:heavy)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(r, ennemies);
+	    		else
+	   				findEnemyToAttack(r, enemyBases);
+			}
+			
+			for (Unit r:light)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(r, ennemies);
+	    		else
+	   				findEnemyToAttack(r, enemyBases);
+			}
+			
 	        
+			
 	        // Time for the special strategy
 	        if(CurrentMapSize == SMALL_MAP)
 	        {
@@ -310,11 +327,11 @@ public class BoBot extends AbstractionLayerAI {
     	boolean doOnce = false;
     	if(!doOnce)
     	{
-	        if(pgs.getHeight() <= 12)
+	        if(pgs.getHeight() < 13)
 	        {
 	        	CurrentMapSize = SMALL_MAP;
 	        }
-	        if(pgs.getHeight() > 12 && pgs.getHeight() <= 18)
+	        if(pgs.getHeight() >= 13 && pgs.getHeight() <= 18)
 	        {
 	        	CurrentMapSize = MEDIUM_MAP;
 	        }
