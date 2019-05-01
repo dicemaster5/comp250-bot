@@ -14,8 +14,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import rts.*;
@@ -117,7 +119,12 @@ public class BoBot extends AbstractionLayerAI {
         
         // Enemy Lists
         List<Unit> ennemies = new LinkedList<Unit>();
-        List<Unit> enemyBases = new LinkedList<Unit>();    
+        List<Unit> enemyBases = new LinkedList<Unit>();
+        
+        Unit dangerEnemy = null;
+        
+        //worker Map
+        Map<Unit, String> wokerRoles = new HashMap<Unit, String>();
         
         //The player
         Player p = gs.getPlayer(player);  
@@ -135,7 +142,7 @@ public class BoBot extends AbstractionLayerAI {
     		}
         	
         	// Find the enemies and add them to the relevant lists =================================================================================================
-    		if(unit.getPlayer() != player)
+    		if(unit.getPlayer() != player && unit.getPlayer() != -1)
         	{
     			if(unit.getType() == baseType && !enemyBases.contains(unit))
         		{
@@ -150,6 +157,7 @@ public class BoBot extends AbstractionLayerAI {
         	// Find player units and add them to the relevant lists =================================================================================================
     		if(unit.getPlayer() == player)
         	{
+    			// BASE TYPES
     			if(unit.getType() == baseType && !bases.contains(unit))
         		{
     				bases.add(unit);
@@ -157,12 +165,20 @@ public class BoBot extends AbstractionLayerAI {
     			if(unit.getType() == barracksType && !barracks.contains(unit))
         		{
     				barracks.add(unit);
+        		}	
+    			
+    			// WORKERS    			
+    			if(unit.getType() == worker)
+        		{
+    				if(resourceWorkers.size() < bases.size())
+    					resourceWorkers.add(unit);
+    				else if(barrackWorkers.size() < 1)
+    					barrackWorkers.add(unit);
+    				else
+    					workers.add(unit);
         		}
     			
-    			if(unit.getType() == worker && !workers.contains(unit) && !resourceWorkers.contains(unit) && !barrackWorkers.contains(unit))
-        		{
-    				workers.add(unit);
-        		}
+    			// SPECIAL UNITS
     			if(unit.getType() == rangedType && !ranged.contains(unit))
         		{
     				ranged.add(unit);
@@ -182,43 +198,16 @@ public class BoBot extends AbstractionLayerAI {
 		// Base Strategy =============================================================================================================
 		if(bases.size() != 0)
 		{
-    		if(workers.size() > 0)
+			for(Unit base:bases)
     		{
-    			resourceWorkers.add(workers.remove(0));
+				// Train Workers
+    			if(CheckUnitsAround(pgs, base) < 3)
+    			{
+    				train(base, worker);
+    			}
     		}
-
-        	if(resourceWorkers.size() != bases.size())
-			{
-	    		for(Unit base:bases)
-	    		{
-	    			train(base, worker);
-	    		}
-        		
-			}
 			
-			else
-			{
-	    		for(Unit base:bases)
-	    		{
-	    			if(CheckUnitsAround(pgs, base) < 2)
-	    			{
-	    				train(base, worker);
-	    				
-	    				if(workers.size() > 0 && barrackWorkers.size() < 1)
-	    				{
-	    					barrackWorkers.add(workers.remove(0));
-	    				}
-	    			}
-	    			else
-	    			{
-	    				if(workers.size() > 0)
-	    				{
-	    					barrackWorkers.add(workers.remove(0));
-	    				}
-	    			}
-	    		}
-			}
-			
+			// Train Special Units
 			for(Unit b:barracks)
 			{
 				if(light.size() < ranged.size())
@@ -230,7 +219,6 @@ public class BoBot extends AbstractionLayerAI {
 					train(b, rangedType);
 				}
 				
-
 			}
 			
 			// ====================================================== BEAHVIOURS AND ACTIONS ========================================================================
@@ -238,20 +226,23 @@ public class BoBot extends AbstractionLayerAI {
 			// WORKERS =======================================================================================================
 			
 			// RESOURCE WORKERS =================================================
+			dangerEnemy = CheckForEnemyNeaby(pgs, bases.get(0), ennemies);
 			for(Unit w:resourceWorkers)
 			{
-				if(resources.size() > 0)
+				if(dangerEnemy != null)
+					attack(w, dangerEnemy);
+				else if(resources.size() > 0)
 					findResourceToHarvest(w, resources, findClosestBase(w,bases));
 				else
 				{
-					workers.add(resourceWorkers.remove(0));
+					workers.add(w);
 				}
 			}
 			
 			// BARRACKS WORKERS =================================================
 			for(Unit b:barrackWorkers)
 			{
-	        	if(p.getResources() > 8)
+	        	if(p.getResources() >= 7)
 	        	{
 	        		Unit base = bases.get(0);
 	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);
@@ -264,8 +255,10 @@ public class BoBot extends AbstractionLayerAI {
 	        	
 	        	else
 	        	{	
-	        		if(CurrentMapSize == MEDIUM_MAP || CurrentMapSize == LARGE_MAP)
+	        		if(CurrentMapSize == MEDIUM_MAP || CurrentMapSize == LARGE_MAP  )
 	        			findResourceToHarvest(b, resources, findClosestBase(b,bases));
+	        		else
+	        			workers.add(b);
 	        	}
 			}	
 			
@@ -326,6 +319,38 @@ public class BoBot extends AbstractionLayerAI {
 		else
 		{
 			//MAKE BASES IF POSSIBLE
+			
+			for (Unit w:workers)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(w, ennemies);
+	    		else
+	   				findEnemyToAttack(w, enemyBases);
+			}
+			
+			for (Unit r:ranged)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(r, ennemies);
+	    		else
+	   				findEnemyToAttack(r, enemyBases);
+			}
+			
+			for (Unit r:heavy)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(r, ennemies);
+	    		else
+	   				findEnemyToAttack(r, enemyBases);
+			}
+			
+			for (Unit r:light)
+			{
+				if(ennemies.size() > 0)
+	    			findEnemyToAttack(r, ennemies);
+	    		else
+	   				findEnemyToAttack(r, enemyBases);
+			}
 		}
         
         return translateActions(player, gs);
@@ -460,11 +485,23 @@ public class BoBot extends AbstractionLayerAI {
     		amountOfUnitsAround++;
 
     	return amountOfUnitsAround;
-    	
-    	
-		//gs.free(x, y);
-		//pgs.getUnitAt(x, y);
-		//base.getPosition(pgs);
+    }
+    
+    public Unit CheckForEnemyNeaby(PhysicalGameState pgs , Unit u, List<Unit> enemies)
+    {		 
+    	Unit closestEnemy = null;
+    	int closestDistance = 2;
+	    for(Unit e: enemies) 
+	    {
+	        int d = Math.abs(e.getX() - u.getX()) + Math.abs(e.getY() - u.getY());
+	        if (d < closestDistance) 
+	        {
+	        	closestEnemy = e;
+	        	closestDistance = d;
+	        }
+	    }
+	    
+	    return closestEnemy;
     }
 }
 
