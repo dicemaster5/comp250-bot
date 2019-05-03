@@ -26,14 +26,8 @@ import rts.units.UnitType;
 import rts.units.UnitTypeTable;
 
 /*
- * @author Sam Auber!
+ * @author Sam Auber
  */
-
-// Strategy implemented by this class:
-// Step 1: check the size of the map to determine the strategy to take
-// Step 2: Get all the player units and sort them out
-// Step 3: Apply behaviour to each unit in the map
-// Step 4: Profit?
 
 public class BoBot extends AbstractionLayerAI {    
     private UnitTypeTable utt;
@@ -66,6 +60,9 @@ public class BoBot extends AbstractionLayerAI {
     int CurrentMapSize = 0; 
     boolean unitTypeSwitch = false;
     
+    /**
+     * @param utt
+     */
     public BoBot(UnitTypeTable utt) {
         super(new AStarPathFinding());
         this.utt = utt;
@@ -81,17 +78,26 @@ public class BoBot extends AbstractionLayerAI {
     }
     
 
+    /* (non-Javadoc)
+     * @see ai.abstraction.AbstractionLayerAI#reset()
+     */
     @Override
     public void reset() {
 
     }
 
+    /* (non-Javadoc)
+     * @see ai.core.AI#clone()
+     */
     @Override
     public AI clone() {
         return new BoBot(utt);
     }
    
 //================================================= MAIN LOOP ==================================================//   
+    /* (non-Javadoc)
+     * @see ai.core.AI#getAction(int, rts.GameState)
+     */
     @Override
     public PlayerAction getAction(int player, GameState gs) {
         PhysicalGameState pgs = gs.getPhysicalGameState();
@@ -223,8 +229,6 @@ public class BoBot extends AbstractionLayerAI {
 			
 			// ====================================================== BEAHVIOURS AND ACTIONS ========================================================================
 			
-			// WORKERS =======================================================================================================
-			
 			// RESOURCE WORKERS =================================================
 			dangerEnemy = CheckForEnemyNeaby(pgs, bases.get(0), ennemies);
 			for(Unit w:resourceWorkers)
@@ -245,6 +249,7 @@ public class BoBot extends AbstractionLayerAI {
 	        	if(p.getResources() >= 7)
 	        	{
 	        		Unit base = bases.get(0);
+	        		// CHANGE THIS TO BE DYNAMIC !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
 	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);
 	        		
 	        	}
@@ -358,29 +363,30 @@ public class BoBot extends AbstractionLayerAI {
 
 //============================================== FUNCTIONS TO USE ================================================//
 
-    // Get map size and do it once
+    /** Check Get and set map size
+     * @param pgs Use the PhysicalGameState to find the size of the map
+     * and then set the CurrentMapSize var to the spcefied size
+     */
     public void getAndSetMapSize(PhysicalGameState pgs)
     {
-    	boolean doOnce = false;
-    	if(!doOnce)
-    	{
-	        if(pgs.getHeight() < 13)
-	        {
-	        	CurrentMapSize = SMALL_MAP;
-	        }
-	        if(pgs.getHeight() >= 13 && pgs.getHeight() <= 18)
-	        {
-	        	CurrentMapSize = MEDIUM_MAP;
-	        }
-	        if(pgs.getHeight() > 18)
-	        {
-	        	CurrentMapSize = LARGE_MAP;
-	        }
-	        doOnce = true;
-    	}
+        if(pgs.getHeight() < 13)
+        {
+        	CurrentMapSize = SMALL_MAP;
+        }
+        if(pgs.getHeight() >= 13 && pgs.getHeight() <= 18)
+        {
+        	CurrentMapSize = MEDIUM_MAP;
+        }
+        if(pgs.getHeight() > 18)
+        {
+        	CurrentMapSize = LARGE_MAP;
+        }
     }
     
-    // Finds the closest Enemy to attack
+    /** Finds the closest Enemy to attack
+     * @param u My unit looking to attack
+     * @param e List of enemies
+     */
     public void findEnemyToAttack(Unit u, List<Unit> e)
     {
     	 Unit closestEnemy = null;
@@ -399,7 +405,12 @@ public class BoBot extends AbstractionLayerAI {
          }
     }
     
-    public boolean canAttackEnemy(Unit u, List<Unit> e, GameState gs)
+    /** Function doesn't currently work ==== TO BE FIXED!
+     * @param u My unit
+     * @param e The List of enemies to check for
+     * @return True or False bool depending on if x y z
+     */
+    public boolean canAttackEnemy(Unit u, List<Unit> e)
     {
     	 Unit closestEnemy = null;
     	 int closestDistance = 0;
@@ -422,7 +433,11 @@ public class BoBot extends AbstractionLayerAI {
          }
     }
     
-    // Finds the closest resource to harvest
+    /** Finds the closest resource to harvest
+     * @param u My Unit worker
+     * @param r List of resources to check
+     * @param b the base to bring resources back to
+     */
     public void findResourceToHarvest(Unit u, List<Unit> r, Unit b)
     {
     	 Unit closestResource = null;
@@ -441,7 +456,10 @@ public class BoBot extends AbstractionLayerAI {
          }
     }
     
-    // Finds the closest base
+    /** Finds the closest base and returns it
+     * @param u My unit
+     * @param r List of bases
+     */
     public Unit findClosestBase(Unit u, List<Unit> r)
     {
     	 Unit closestBase = null;
@@ -463,11 +481,11 @@ public class BoBot extends AbstractionLayerAI {
         	 return null;
     }
     
-    @Override
-    public List<ParameterSpecification> getParameters() {
-        return new ArrayList<>();
-    }
-    
+    /** Check how many units are around the base to see if they are blocking
+     * @param pgs PhysicalGameState
+     * @param base The base to check
+     * @return returns the amount Of Units Around the base
+     */
     public int CheckUnitsAround(PhysicalGameState pgs , Unit base)
     {
     	int basePosX = base.getX();
@@ -487,6 +505,12 @@ public class BoBot extends AbstractionLayerAI {
     	return amountOfUnitsAround;
     }
     
+    /** Looks for a enemy that is of 2 positions away from my unit and returns that enemy
+     * @param pgs PhysicalGameState
+     * @param u My unit
+     * @param enemies List of enemies to check for
+     * @return returns the closest enemy near to my unit
+     */
     public Unit CheckForEnemyNeaby(PhysicalGameState pgs , Unit u, List<Unit> enemies)
     {		 
     	Unit closestEnemy = null;
@@ -503,6 +527,16 @@ public class BoBot extends AbstractionLayerAI {
 	    
 	    return closestEnemy;
     }
+    
+    /* (non-Javadoc)
+     * @see ai.core.AI#getParameters()
+     */
+    @Override
+    public List<ParameterSpecification> getParameters() {
+        return new ArrayList<>();
+    }
+    
+   
 }
 
 

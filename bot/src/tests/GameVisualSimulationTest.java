@@ -28,12 +28,12 @@ import util.XMLWriter;
 public class GameVisualSimulationTest {
     public static void main(String args[]) throws Exception {
         UnitTypeTable utt = new UnitTypeTable();
-        PhysicalGameState pgs = PhysicalGameState.load("../microrts/maps/8x8/basesWorkers8x8Obstacle.xml", utt);
+        PhysicalGameState pgs = PhysicalGameState.load("../microrts/maps/10x10/basesWorkers10x10.xml", utt);
 //        PhysicalGameState pgs = MapGenerator.basesWorkers8x8Obstacle();
 
         GameState gs = new GameState(pgs, utt);
         int MAXCYCLES = 5000;
-        int PERIOD = 10;
+        int PERIOD = 15;
         boolean gameover = false;
         
         //AI ai1 = new WorkerRush(utt, new BFSPathFinding());
