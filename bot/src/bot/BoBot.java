@@ -52,16 +52,15 @@ public class BoBot extends AbstractionLayerAI {
     public int defenderAmount = 4;
     public int barracksAmount = 1;
    
-    // Map size
+    // Map sizes
     public int LARGE_MAP = 3;
     public int MEDIUM_MAP = 2;
     public int SMALL_MAP = 1;
    
     int CurrentMapSize = 0; 
-    boolean unitTypeSwitch = false;
     
     /**
-     * @param utt
+     * @param utt UnitTypeTable
      */
     public BoBot(UnitTypeTable utt) {
         super(new AStarPathFinding());
