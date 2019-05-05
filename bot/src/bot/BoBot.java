@@ -256,7 +256,7 @@ public class BoBot extends AbstractionLayerAI {
         		
         		if(dangerEnemy != null)
 					attack(b, dangerEnemy);
-        		else if(p.getResources() >= 9 && CurrentMapSize != VERY_SMALL_MAP)
+        		else if(p.getResources() >= 9)
 	        	{
 	        		// I SHOULD CHANGE THIS TO BE DYNAMIC
 	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);	        		
