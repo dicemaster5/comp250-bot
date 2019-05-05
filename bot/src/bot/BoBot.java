@@ -53,9 +53,9 @@ public class BoBot extends AbstractionLayerAI {
     public int barracksAmount = 1;
    
     // Map sizes
-    public int LARGE_MAP = 3;
+    public int LARGE_MAP = 1;
     public int MEDIUM_MAP = 2;
-    public int SMALL_MAP = 1;
+    public int SMALL_MAP = 3;
     public int VERY_SMALL_MAP = 4;
    
     int CurrentMapSize = 0; 
@@ -76,10 +76,8 @@ public class BoBot extends AbstractionLayerAI {
         rangedType = utt.getUnitType("Ranged");
         lightType = utt.getUnitType("Light");
         
-        // Pathfinder checker
         pf = new AStarPathFinding();
     }
-    
 
     /* (non-Javadoc)
      * @see ai.abstraction.AbstractionLayerAI#reset()
@@ -174,7 +172,7 @@ public class BoBot extends AbstractionLayerAI {
     			if(unit.getType() == barracksType && !barracks.contains(unit))
         		{
     				barracks.add(unit);
-        		}	
+        		}
     			
     			// WORKERS    			
     			if(unit.getType() == worker)
@@ -202,7 +200,11 @@ public class BoBot extends AbstractionLayerAI {
         		}
         	}
         }
-
+        
+        // Check to see if there is a close enemy to my first base
+        // Set that enemy to be a critical and dangerous enemy
+		if(enemies.size() > 0 && bases.size() > 0)
+			dangerEnemy = checkForEnemyNearby(pgs, bases.get(0), enemies);
 		
 		// Base Strategy =============================================================================================================
 		if(bases.size() != 0)
@@ -217,6 +219,8 @@ public class BoBot extends AbstractionLayerAI {
     		}
 			
 			// Train Special Units
+			// Switch between making light types and ranged types for better
+			// unit composition on the field
 			for(Unit b:barracks)
 			{
 				if(light.size() < ranged.size())
@@ -233,7 +237,6 @@ public class BoBot extends AbstractionLayerAI {
 			// ====================================================== BEAHVIOURS AND ACTIONS ========================================================================
 			
 			// RESOURCE WORKERS =================================================
-			dangerEnemy = checkForEnemyNearby(pgs, bases.get(0), enemies);
 			for(Unit w:resourceWorkers)
 			{
 				if(dangerEnemy != null)
@@ -250,20 +253,20 @@ public class BoBot extends AbstractionLayerAI {
 			for(Unit b:barrackWorkers)
 			{
         		Unit base = findClosestUnit(b, bases);
-
-	        	if(p.getResources() >= 9)
+        		
+        		if(dangerEnemy != null)
+					attack(b, dangerEnemy);
+        		else if(p.getResources() >= 9 && CurrentMapSize != VERY_SMALL_MAP)
 	        	{
-	        		// CHANGE THIS TO BE DYNAMIC !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
-	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);
-	        		
+	        		// I SHOULD CHANGE THIS TO BE DYNAMIC
+	        		build(b, barracksType, base.getX() + 1, base.getY() - 1);	        		
 	        	}
 	        	else if(barracks.size() >= 1)
 	        	{
         			harvest(b, findClosestUnit(b, resources), base);
 	        	}
-	        	
 	        	else
-	        	{	
+	        	{
 	        		if(CurrentMapSize == MEDIUM_MAP || CurrentMapSize == LARGE_MAP || CurrentMapSize == SMALL_MAP )
 	        			harvest(b, findClosestUnit(b, resources), base);
 	        		else
@@ -272,20 +275,12 @@ public class BoBot extends AbstractionLayerAI {
 			}	
 			
 			// ATTACKERS ==========================================================================================================
-			
 			attackers.addAll(workers);
 			attackers.addAll(ranged);
 			attackers.addAll(heavy);
 			attackers.addAll(light);
 			for (Unit a:attackers)
-			{
-				/*
-				if(!canMoveTo(a, gs, findClosestUnit(a, enemies)) && enemies.size() > 0 )
-				{
-					System.out.println("CAN'T MOVE TO ENEMY!");
-					//move(a, 5, 5);
-				}
-				*/
+			{	
 				if(enemies.size() > 0)
 					attack(a,findClosestUnit(a, enemies));
 	    		else if(resources.size() > 0 && a.getType().canHarvest && enemyBases.get(0).getResources() > 0)
@@ -293,27 +288,10 @@ public class BoBot extends AbstractionLayerAI {
 	    		else
 	    			attack(a,findClosestUnit(a, enemyBases));
 			}
-			
-			
-	        
-			
-	        // Time for the special strategy
-	        if(CurrentMapSize == SMALL_MAP)
-	        {
-	        	//Do worker rush strategy
-	        }
-	        else if(CurrentMapSize == MEDIUM_MAP)
-	        {
-	        	//Do LightType rush strategy
-	        }
-	        else if(CurrentMapSize == LARGE_MAP)
-	        {
-	        	//Do Ranged and light rush strategy
-	        }
     	}
 		else
 		{
-			// Full on attack with every unit we have
+			// Full on attack with every unit we have!
 			for (Unit unit : pgs.getUnits())
 			{
 				if(enemies.size() > 0)
@@ -380,28 +358,6 @@ public class BoBot extends AbstractionLayerAI {
          }
     }
     
-    /** Finds the closest Enemy to attack
-     * @param u My unit looking to attack
-     * @param e List of enemies
-     */
-    public void findEnemyToAttack(Unit u, List<Unit> e)
-    {
-    	 Unit closestEnemy = null;
-    	 int closestDistance = 0;
-         for(Unit e2: e) {
-             int d = Math.abs(e2.getX() - u.getX()) + Math.abs(e2.getY() - u.getY());
-             if (closestEnemy==null || d<closestDistance) 
-             {
-                 closestEnemy = e2;
-                 closestDistance = d;
-             }
-         if (closestEnemy!=null)
-         {
-             attack(u,closestEnemy);
-         }
-         }
-    }
-    
     /** Checks if a units pathfinding is valid and that it can move to X unit
      * @param u My unit to check
      * @param e enemy to move to
@@ -417,54 +373,6 @@ public class BoBot extends AbstractionLayerAI {
     	else
     		return false;
     	
-    }
-    
-    /** Finds the closest resource to harvest
-     * @param u My Unit worker
-     * @param r List of resources to check
-     * @param b the base to bring resources back to
-     */
-    public void findResourceToHarvest(Unit u, List<Unit> r, Unit b)
-    {
-    	 Unit closestResource = null;
-    	 int closestDistance = 0;
-         for(Unit r2: r) {
-             int d = Math.abs(r2.getX() - u.getX()) + Math.abs(r2.getY() - u.getY());
-             if (closestResource==null || d<closestDistance) 
-             {
-            	 closestResource = r2;
-                 closestDistance = d;
-             }
-         }
-         if (closestResource!=null)
-         {
-        	 harvest(u,closestResource, b);
-         }
-    }
-    
-    /** Finds the closest base and returns it
-     * @param u My unit
-     * @param r List of bases
-     */
-    public Unit findClosestBase(Unit u, List<Unit> r)
-    {
-    	 Unit closestBase = null;
-    	 int closestDistance = 0;
-         for(Unit r2: r) {
-             int d = Math.abs(r2.getX() - u.getX()) + Math.abs(r2.getY() - u.getY());
-             if (closestBase==null || d<closestDistance) 
-             {
-            	 closestBase = r2;
-                 closestDistance = d;
-             }
-         }
-         
-         if (closestBase!=null)
-         {
-        	 return closestBase;
-         }
-         else
-        	 return null;
     }
     
     /** Check how many units are around the base to see if they are blocking
@@ -500,7 +408,7 @@ public class BoBot extends AbstractionLayerAI {
     public Unit checkForEnemyNearby(PhysicalGameState pgs , Unit u, List<Unit> enemies)
     {		 
     	Unit closestEnemy = null;
-    	int closestDistance = 2;
+    	int closestDistance = 3;
 	    for(Unit e: enemies) 
 	    {
 	        int d = Math.abs(e.getX() - u.getX()) + Math.abs(e.getY() - u.getY());
