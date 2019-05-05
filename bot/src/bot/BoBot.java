@@ -206,7 +206,7 @@ public class BoBot extends AbstractionLayerAI {
 		if(enemies.size() > 0 && bases.size() > 0)
 			dangerEnemy = checkForEnemyNearby(pgs, bases.get(0), enemies);
 		
-		// Base Strategy =============================================================================================================
+		// Base and barracks upkeep =============================================================================================================
 		if(bases.size() != 0)
 		{
 			for(Unit base:bases)
@@ -219,8 +219,8 @@ public class BoBot extends AbstractionLayerAI {
     		}
 			
 			// Train Special Units
-			// Switch between making light types and ranged types for better
-			// unit composition on the field
+			// Switch between making light types and ranged types
+			// for better unit composition on the field
 			for(Unit b:barracks)
 			{
 				if(light.size() < ranged.size())
@@ -289,7 +289,7 @@ public class BoBot extends AbstractionLayerAI {
 	    			attack(a,findClosestUnit(a, enemyBases));
 			}
     	}
-		else
+		else // If all my bases get destroyed, go in on a all out assault on the enemy
 		{
 			// Full on attack with every unit we have!
 			for (Unit unit : pgs.getUnits())
@@ -372,7 +372,6 @@ public class BoBot extends AbstractionLayerAI {
     	}
     	else
     		return false;
-    	
     }
     
     /** Check how many units are around the base to see if they are blocking
